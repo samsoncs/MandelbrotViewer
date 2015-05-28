@@ -76,6 +76,7 @@ public class Mandolini extends JFrame implements GLEventListener, KeyListener{
         infoPanel.add(controlSpeed);
         infoPanel.add(iterationLimit);
         infoPanel.add(iterations);
+        iterations.setSelectedItem(128);
         settings.setIterations((int) iterations.getSelectedItem());
 
         iterations.addActionListener(new ActionListener() {
