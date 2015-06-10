@@ -2,10 +2,13 @@
 public class MandelbrotSetting {
     private float x = -2;
     private float y = -2;
-    private float height = 4;
     private float width = 4;
+    private float height = 4;
     private int iterations = 128;
     private int colorSmoothing;
+    private boolean capture = false;
+    private int imageCount = 0;
+
 
     public MandelbrotSetting(){
         colorSmoothing = 1;
@@ -13,6 +16,28 @@ public class MandelbrotSetting {
 
     public float getX() {
         return x;
+    }
+
+    public boolean getCaptureStatus(){
+        return capture;
+    }
+
+    public void toggleCaptureStatus(){
+        if(capture){
+            capture = false;
+        }
+        else{
+            imageCount = 0;
+            capture = true;
+        }
+    }
+
+    public int getImageCount(){
+        return imageCount;
+    }
+
+    public void incrementImageCount(){
+        imageCount++;
     }
 
     public void setX(float x) {
@@ -61,13 +86,5 @@ public class MandelbrotSetting {
 
     public void setIterations(int iterations) {
         this.iterations = iterations;
-    }
-
-    public void copyTo(MandelbrotSetting copy) {
-        copy.x = x;
-        copy.y = y;
-        copy.height = height;
-        copy.width = width;
-        copy.iterations = iterations;
     }
 }
