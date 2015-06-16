@@ -1,16 +1,23 @@
-
-public class MandelbrotSetting {
+/**
+ * This class is used to store all the information about the Mandelbrot set, such as positional information, iteration limit etc.
+ *
+ * @author Samson Svendsen
+ * @author Eivind Kristoffersen
+ * @author Simen Aakhus
+ * @author Anders Kristiansen
+ */
+public class Setting {
     private float x = -2;
     private float y = -2;
     private float width = 4;
     private float height = 4;
-    private int iterations = 128;
     private int colorSmoothing;
     private boolean capture = false;
     private int imageCount = 0;
+    private int iterations = 128;
 
 
-    public MandelbrotSetting(){
+    public Setting(){
         colorSmoothing = 1;
     }
 
@@ -22,6 +29,9 @@ public class MandelbrotSetting {
         return capture;
     }
 
+    /**
+     * Toggles the screencapturing on/off
+     */
     public void toggleCaptureStatus(){
         if(capture){
             capture = false;
@@ -32,10 +42,17 @@ public class MandelbrotSetting {
         }
     }
 
+    /**
+     * Gets the number of images taken.
+     * @return returns the number of images taken at that given point.
+     */
     public int getImageCount(){
         return imageCount;
     }
 
+    /**
+     * Increments the image count.
+     */
     public void incrementImageCount(){
         imageCount++;
     }
@@ -76,6 +93,9 @@ public class MandelbrotSetting {
         return colorSmoothing;
     }
 
+    /**
+     * Toggles the color smoothing on/off
+     */
     public void toggleColorSmoothing(){
         if(colorSmoothing == 1){
             colorSmoothing = 0;

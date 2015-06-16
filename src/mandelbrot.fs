@@ -9,6 +9,9 @@ uniform vec3 col2;
 uniform vec3 col3;
 uniform vec3 col4;
 
+
+//This shader is based off of Morten Nobel's work (2010, Feb 23),http://blog.nobel-joergensen.com/2010/02/23/real-time-mandelbrot-in-java-%E2%80%93-part-2-jogl/
+//and modified with functionality for color smoothing, and letting the user select the color scheme.
 float calculateMandelbrotIterations(float x, float y) {
     float xx = 0.0;
     float yy = 0.0;

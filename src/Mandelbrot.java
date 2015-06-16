@@ -1,9 +1,8 @@
+import com.jogamp.opengl.*;
+import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.FPSAnimator;
-
 import javax.imageio.ImageIO;
-import javax.media.opengl.*;
-import javax.media.opengl.awt.GLCanvas;
-import javax.media.opengl.glu.GLU;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -16,13 +15,21 @@ import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Mandolini extends JFrame implements GLEventListener, KeyListener, MouseListener{
+/**
+ * This class is where all the OpenGL is rendered to the screen. It implements the GLEventListener interface from jogamp, and KeyListener for handeling user inputs.
+ * It also uses Java swing, and JFrame to display the Mandelbrot set to the screen.
+ * @author Samson Svendsen
+ * @author Eivind Kristoffersen
+ * @author Simen Aakhus
+ * @author Anders Kristiansen
+ */
+public class Mandelbrot extends JFrame implements GLEventListener, KeyListener{
 
     private int vertexShaderProgram;
     private int fragmentShaderProgram;
     private int shaderprogram;
     private int frameCount;
-    private MandelbrotSetting settings;
+    private Setting settings;
     private FPSAnimator animator;
     private final Set<Integer> pressedKey = new HashSet<Integer>();
     private Camera camera;
@@ -40,13 +47,14 @@ public class Mandolini extends JFrame implements GLEventListener, KeyListener, M
     private JComboBox iterations = new JComboBox(new Object[]{32,64,128,256,512,1024,2048,4096});
     private JComboBox size = new JComboBox(new Object[]{700, 800, 900,1000});
 
-
-
     private ColorSelector colors;
 
-    public Mandolini() {
+    /**
+     * This constructor initiates the class with all the necessary variables and java swing components.
+     */
+    public Mandelbrot() {
         super("MandelbrotViewer");
-        settings = new MandelbrotSetting();
+        settings = new Setting();
         camera = new Camera(settings);
         colors = new ColorSelector();
         setLayout(new BorderLayout());
@@ -113,7 +121,6 @@ public class Mandolini extends JFrame implements GLEventListener, KeyListener, M
         this.setResizable(false);
         canvas.requestFocusInWindow();
         canvas.addKeyListener(this);
-        canvas.addMouseListener(this);
         frameCount = 0;
 
         animator = new FPSAnimator(60);
@@ -137,6 +144,11 @@ public class Mandolini extends JFrame implements GLEventListener, KeyListener, M
 
     }
 
+    /**
+     * Loads the shader from the shader file
+     * @param name the name of the shader file
+     * @return returns a string array
+     */
     private String[] loadShaderSrc(String name){
         StringBuilder sb = new StringBuilder();
         try{
@@ -155,6 +167,11 @@ public class Mandolini extends JFrame implements GLEventListener, KeyListener, M
         return new String[]{sb.toString()};
     }
 
+    /**
+     * Attaches the shaders to OpenGL
+     * @param gl Entry point to JOGL
+     * @throws Exception
+     */
     private void attachShaders(GL2 gl) throws Exception {
 
         vertexShaderProgram = gl.glCreateShader(GL2.GL_VERTEX_SHADER);
@@ -190,10 +207,13 @@ public class Mandolini extends JFrame implements GLEventListener, KeyListener, M
     }
 
     @Override
+    //This method is loosely based off of Morten Nobel's work (2010, Feb 23),http://blog.nobel-joergensen.com/2010/02/23/real-time-mandelbrot-in-java-%E2%80%93-part-2-jogl/
     public void display(GLAutoDrawable drawable) {
+
         GL2 gl = drawable.getGL().getGL2();
 
         updateUniformVars(gl);
+
         gl.glLoadIdentity();
 
         gl.glBegin(GL2.GL_QUADS);
@@ -215,20 +235,14 @@ public class Mandolini extends JFrame implements GLEventListener, KeyListener, M
         controlSpeed.setText("" + camera.getZoomFactor());
         iterationLimit.setText("Iteration limit: ");
 
-
         boolean captureStatus = settings.getCaptureStatus();
 
         if(captureStatus){
-            recording.setText("Recording: on | ");
-        }
-        else{
-            recording.setText("Recording: off | ");
-        }
+            recording.setText("s - Recording: on | ");
 
-        if(captureStatus) {
             //Limits picture writing to every 20th frame
             if(frameCount % 20 == 0) {
-                BufferedImage snapshot = toImage(gl, (int) size.getSelectedItem(), (int) size.getSelectedItem() - 100);
+                BufferedImage snapshot = snapImage(gl, (int) size.getSelectedItem(), (int) size.getSelectedItem() - 100);
                 this.getClass().getProtectionDomain().getCodeSource().getLocation();
                 File outputfile = new File("snap//image" + settings.getImageCount() + ".png");
                 settings.incrementImageCount();
@@ -239,33 +253,47 @@ public class Mandolini extends JFrame implements GLEventListener, KeyListener, M
                 }
             }
         }
+        else{
+            recording.setText("s - Recording: off | ");
+        }
 
         frameCount++;
     }
 
-    public BufferedImage toImage(GL2 gl, int w, int h) {
+    /**
+     * Takes a snapshot of the screen, and returns it as a buffered image.
+     * @param gl Entry point to JOGL
+     * @param width width of the screen
+     * @param height height of the screen
+     * @return returns a buffered image of the screen.
+     */
+    public BufferedImage snapImage(GL2 gl, int width, int height) {
 
-        gl.glReadBuffer(GL.GL_FRONT); // or GL.GL_BACK
+        gl.glReadBuffer(GL.GL_FRONT);
 
-        ByteBuffer glBB = ByteBuffer.allocate(3 * w * h);
-        gl.glReadPixels(0, 0, w, h, GL2.GL_BGR, GL.GL_BYTE, glBB);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(3 * width * height);
+        gl.glReadPixels(0, 0, width, height, GL2.GL_BGR, GL.GL_BYTE, byteBuffer);
 
-        BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        int[] bd = ((DataBufferInt) bi.getRaster().getDataBuffer()).getData();
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        int[] bd = ((DataBufferInt) bufferedImage.getRaster().getDataBuffer()).getData();
 
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                int b = 2 * glBB.get();
-                int g = 2 * glBB.get();
-                int r = 2 * glBB.get();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int b = 2 * byteBuffer.get();
+                int g = 2 * byteBuffer.get();
+                int r = 2 * byteBuffer.get();
 
-                bd[(h - y - 1) * w + x] = (r << 16) | (g << 8) | b | 0xFF000000;
+                bd[(height - y - 1) * width + x] = (r << 16) | (g << 8) | b | 0xFF000000;
             }
         }
 
-        return bi;
+        return bufferedImage;
     }
 
+    /**
+     * Updates all the uniform variables needed for the fragment shader.
+     * @param gl entry point to JOGL
+     */
     private void updateUniformVars(GL2 gl) {
 
         int mandel_x = gl.glGetUniformLocation(shaderprogram, "mandel_x");
@@ -380,38 +408,6 @@ public class Mandolini extends JFrame implements GLEventListener, KeyListener, M
     public void keyReleased(KeyEvent keyEvent) {
 
         pressedKey.remove(keyEvent.getExtendedKeyCode());
-
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    public void mousePressed(MouseEvent mouseEvent) {
-        int modifiers = mouseEvent.getModifiers();
-        if ((modifiers & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
-            camera.zoom();
-        }
-        if ((modifiers & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
-            camera.unzoom();
-        }
-
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent mouseEvent) {
 
     }
 }

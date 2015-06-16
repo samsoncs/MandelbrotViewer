@@ -1,9 +1,15 @@
-import javax.media.opengl.GL2;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
-import java.util.ArrayList;
-import java.util.List;
+import com.jogamp.opengl.GL2;
 import java.util.Random;
 
+
+/**
+ * This class lets the user toggle between different color schemes for the Mandelbrot Set. Each color scheme has its own int value to identify it.
+ *
+ * @author Samson Svendsen
+ * @author Eivind Kristoffersen
+ * @author Simen Aakhus
+ * @author Anders Kristiansen
+ */
 public class ColorSelector {
 
     private int colorScheme;
@@ -14,16 +20,25 @@ public class ColorSelector {
     private int changeCount = 0;
     private boolean up = true;
 
-
+    /**
+     * Constructor to initialize the ColorSelector.
+     */
     public ColorSelector(){
         colorScheme = 0;
         r = new Random();
     }
 
+    /**
+     * Returns the current colorScheme
+     * @return returns the int value of the current color scheme
+     */
     public int getColorScheme(){
         return colorScheme;
     }
 
+    /**
+     * Changes the color scheme to the next scheme (or resets to the first iff the user is on the last color scheme).
+     */
     public void incrementColor(){
         if(colorScheme < COLORS) {
             colorScheme++;
@@ -33,6 +48,9 @@ public class ColorSelector {
         }
     }
 
+    /**
+     * Oscillates floats for the Mandelbrot color scheme that changes colors.
+     */
     public void oscillate(){
         if(up) {
             if (changer1 <= 1.0f) {
@@ -55,6 +73,11 @@ public class ColorSelector {
         }
     }
 
+    /**
+     * Sets the color scheme by sending a three dimensional vector to the shader as a uniform variable.
+     * @param gl Entry point to JOGL
+     * @param shaderprogram The shaderprogram consisting of a vertex shader and a fragment shader.
+     */
     public void selectColor(GL2 gl, int shaderprogram){
 
         if(colorScheme == 0) {
@@ -129,16 +152,6 @@ public class ColorSelector {
             }
             int col4 = gl.glGetUniformLocation(shaderprogram, "col4");
             gl.glUniform3f(col4, 1.0f, 0.0f, 0.0f);
-            /*
-            int col1 = gl.glGetUniformLocation(shaderprogram, "col1");
-            gl.glUniform3f(col1, r.nextFloat(), r.nextFloat(), r.nextFloat());
-            int col2 = gl.glGetUniformLocation(shaderprogram, "col2");
-            gl.glUniform3f(col2, r.nextFloat(), r.nextFloat(), r.nextFloat());
-            int col3 = gl.glGetUniformLocation(shaderprogram, "col3");
-            gl.glUniform3f(col3, r.nextFloat(), r.nextFloat(), r.nextFloat());
-            int col4 = gl.glGetUniformLocation(shaderprogram, "col4");
-            gl.glUniform3f(col4, r.nextFloat(), r.nextFloat(), r.nextFloat());
-            */
         }
     }
 
